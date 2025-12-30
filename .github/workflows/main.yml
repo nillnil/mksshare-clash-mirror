@@ -1,0 +1,46 @@
+name: Mirror Latest Clash Subscription URL
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # 每10分钟运行一次
+  workflow_dispatch:        # 手动触发
+
+jobs:
+  mirror-url:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Fetch README.md from source repo
+        run: |
+          curl -s -L "https://raw.githubusercontent.com/mksshare/mksshare.github.io/refs/heads/main/README.md" > README.md
+
+      - name: Extract first subscription URL after "免费Clash订阅链接"
+        run: |
+          # 方法：先找到包含"免费Clash订阅链接"的行，然后从此行之后找第一个匹配的URL
+          SUB_URL=$(sed -n '/免费Clash订阅链接/,$p' README.md | grep -o 'https://[^\s<>"()]\+\.xyz/[^\s<>"()]\+' | head -1)
+          
+          if [ -z "$SUB_URL" ]; then
+            echo "❌ 未在'免费Clash订阅链接'之后找到任何订阅地址"
+            exit 1
+          fi
+
+          echo "✅ 找到Clash订阅地址："
+          echo "$SUB_URL"
+
+          # 写入文件
+          echo "$SUB_URL" > clash-url.txt
+          cat clash-url.txt
+
+      - name: Commit and push updated URL
+        run: |
+          git config --local user.email "874868110@qq.com"
+          git config --local user.name "GitHub Action"
+          git add clash-url.txt
+          git commit -m "Update Clash subscription URL $(date)" || echo "No changes to commit"
+          git push origin main
+
+      - name: Notify success
+        run: |
+          echo "✅ Clash订阅地址已更新！"
