@@ -63,22 +63,22 @@ jobs:
           SUB_URL=$(cat .sub_url)
           echo "📥 正在获取原始订阅内容..."
 
-          curl -s -L "$SUB_URL" > clash-url.txt
+          curl -s -L "$SUB_URL" > clash-url
 
-          if [ ! -s clash-url.txt ]; then
+          if [ ! -s clash-url ]; then
             echo "❌ 订阅内容为空或请求失败"
             exit 1
           fi
 
           echo "✅ 原始内容已保存，前200字符预览："
-          head -c 200 clash-url.txt
+          head -c 200 clash-url
           echo "..."
 
-      - name: Commit and push clash-url.txt
+      - name: Commit and push clash-url
         run: |
           git config --local user.email "874868110@qq.com"
           git config --local user.name "GitHub Action"
-          git add clash-url.txt
+          git add clash-url
           git commit -m "Mirror raw subscription content $(date -u)" || echo "No changes detected"
           git push origin main
 
@@ -90,4 +90,4 @@ jobs:
         run: |
           echo "✅ 订阅内容已镜像成功！"
           echo "Clash Verge 订阅地址："
-          echo "https://raw.githubusercontent.com/nillnil/mksshare-clash-mirror/refs/heads/main/clash-url.txt"
+          echo "https://raw.githubusercontent.com/nillnil/mksshare-clash-mirror/refs/heads/main/clash-url"
