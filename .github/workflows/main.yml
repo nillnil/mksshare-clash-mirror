@@ -19,11 +19,17 @@ jobs:
       - name: Extract subscription URL after '<details><summary>免费Clash订阅链接</summary>'
         run: |
           # 使用 awk 精确匹配 <details> 块中的第一个 .xyz/ 链接
-          # 方法：使用 perl 处理多行，从“免费Clash订阅链接”之后提取第一个 .xyz/ 链接
-          SUB_URL=$(perl -0777 -ne '
-            if (/免费Clash订阅链接.*?(\bhttps:\/\/[^\s<>"()]+\.[^/\s<>"()]+\/[^\s<>"()]*)/s) {
-              print $1;
-              exit;
+          SUB_URL=$(awk '
+            BEGIN { found = 0; url = "" }
+            /免费Clash订阅链接/ { found = 1; next }
+            found && /https:/ {
+              # 匹配 https://... 开头的行，并提取完整 URL（支持跨行）
+              match($0, /https:\/\/[^[:space:]]+\.xyz\/[^[:space:]]+/)
+              if (RSTART > 0) {
+                url = substr($0, RSTART, RLENGTH)
+                print url
+                exit
+              }
             }
           ' README.md)
 
