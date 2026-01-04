@@ -19,18 +19,16 @@ jobs:
       - name: Extract subscription URL after '<details><summary>免费Clash订阅链接</summary>'
         run: |
           # 使用 awk 精确匹配 <details> 块中的第一个 .xyz/ 链接
-          SUB_URL=$(awk '
-            BEGIN { found = 0 }
-            /免费Clash订阅链接/ { found = 1; next }
-            found && /https:\/\/[^[:space:]]+\.xyz\/[^[:space:]]+/ {
-              match($0, /https:\/\/[^[:space:]]+\.xyz\/[^[:space:]]+/)
-              print substr($0, RSTART, RLENGTH)
-              exit
+          # 方法：使用 perl 处理多行，从“免费Clash订阅链接”之后提取第一个 .xyz/ 链接
+          SUB_URL=$(perl -0777 -ne '
+            if (/免费Clash订阅链接.*?(\bhttps:\/\/[^\s<>"()]+\.[^/\s<>"()]+\/[^\s<>"()]*)/s) {
+              print $1;
+              exit;
             }
           ' README.md)
 
           if [ -z "$SUB_URL" ]; then
-            echo "❌ 未在<details>块中找到'免费Clash订阅链接'之后的订阅地址"
+            echo "❌ 未在免费Clash订阅链接'之后找到任何订阅地址"
             exit 1
           fi
 
@@ -42,7 +40,7 @@ jobs:
           SUB_URL=$(cat .sub_url)
           echo "📥 正在获取原始订阅内容..."
 
-          curl -s -L "$SUB_URL" > clash.txt
+          curl -s -L "$SUB_URL" > clash-url.txt
 
           if [ ! -s clash.txt ]; then
             echo "❌ 订阅内容为空或请求失败"
@@ -50,14 +48,14 @@ jobs:
           fi
 
           echo "✅ 原始内容已保存，前200字符预览："
-          head -c 200 clash.txt
+          head -c 200 clash-url.txt
           echo "..."
 
-      - name: Commit and push clash.txt
+      - name: Commit and push clash-url.txt
         run: |
           git config --local user.email "874868110@qq.com"
           git config --local user.name "GitHub Action"
-          git add clash.txt
+          git add clash-url.txt
           git commit -m "Mirror raw subscription content $(date -u)" || echo "No changes detected"
           git push origin main
 
@@ -69,4 +67,4 @@ jobs:
         run: |
           echo "✅ 订阅内容已镜像成功！"
           echo "Clash Verge 订阅地址："
-          echo "https://raw.githubusercontent.com/nillnil/mksshare-clash-mirror/refs/heads/main/clash.txt"
+          echo "https://raw.githubusercontent.com/nillnil/mksshare-clash-mirror/refs/heads/main/clash-url.txt"
