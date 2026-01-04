@@ -65,7 +65,7 @@ jobs:
 
           curl -s -L "$SUB_URL" > clash-url.txt
 
-          if [ ! -s clash.txt ]; then
+          if [ ! -s clash-url.txt ]; then
             echo "❌ 订阅内容为空或请求失败"
             exit 1
           fi
