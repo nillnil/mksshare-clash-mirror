@@ -14,9 +14,26 @@ jobs:
 
       - name: Fetch README.md from source repo
         run: |
-          curl -s -L "https://raw.githubusercontent.com/mksshare/mkssshare.github.io/main/README.md" > README.md
+          echo "📥 正在下载 README.md..."
+          curl -s -L "https://raw.githubusercontent.com/mksshare/mksshare.github.io/refs/heads/main/README.md" > README.md
+          
+          # 输出文件大小和前 50 行
+          echo "📄 文件大小: $(wc -c < README.md) 字节"
+          echo "📋 前 50 行内容："
+          head -n 50 README.md
+          echo "----------------------------------------"
 
-      - name: Extract subscription URL after '<details><summary>免费Clash订阅链接</summary>'
+          # 检查是否包含关键词
+          if grep -q "免费Clash订阅链接" README.md; then
+            echo "✅ 找到关键词 '免费Clash订阅链接'"
+          else
+            echo "❌ 未找到关键词 '免费Clash订阅链接'"
+            echo "🔍 完整 README.md 内容："
+            cat README.md
+            exit 1
+          fi
+
+      - name: Extract subscription URL after '免费Clash订阅链接'
         run: |
           # 使用 awk 精确匹配 <details> 块中的第一个 .xyz/ 链接
           SUB_URL=$(awk '
