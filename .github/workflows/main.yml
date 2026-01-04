@@ -19,7 +19,15 @@ jobs:
       - name: Extract subscription URL after "免费Clash订阅链接"
         run: |
           # 从包含“免费Clash订阅链接”的行开始，提取第一个 .xyz/ 链接
-          SUB_URL=$(sed -n '/免费Clash订阅链接/,$p' README.md | grep -o 'https://[^\s<>"()]\+\.xyz/[^\s<>"()]\+' | head -1)
+          SUB_URL=$(awk '
+            BEGIN { found = 0 }
+            /免费Clash订阅链接/ { found = 1; next }
+            found && /https:\/\/[^[:space:]]+\.xyz\/[^[:space:]]+/ {
+              match($0, /https:\/\/[^[:space:]]+\.xyz\/[^[:space:]]+/)
+              print substr($0, RSTART, RLENGTH)
+              exit
+            }
+          ' README.md)
           
           if [ -z "$SUB_URL" ]; then
             echo "❌ 未在'免费Clash订阅链接'之后找到订阅地址"
