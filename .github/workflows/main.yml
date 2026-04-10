@@ -1,9 +1,9 @@
 name: Mirror Latest Clash Subscription URL
 
-on:
-  schedule:
-    - cron: '*/5 * * * *'  # 每10分钟运行一次
-  workflow_dispatch:        # 手动触发
+#on:
+  #schedule:
+    #- cron: '*/5 * * * *'  # 每10分钟运行一次
+  #workflow_dispatch:        # 手动触发
 
 jobs:
   mirror:
